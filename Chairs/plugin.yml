@@ -1,0 +1,8 @@
+name: Chairs
+version: 0.1
+author: stormer3428
+main: fr.stormer3428.chairs.Chairs
+api-version: 1.13
+commands:
+  chair:
+    description:
