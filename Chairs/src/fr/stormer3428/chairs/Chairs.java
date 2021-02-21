@@ -1,5 +1,6 @@
 package fr.stormer3428.chairs;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Location;
@@ -7,6 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.AbstractArrow.PickupStatus;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
@@ -20,7 +22,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 import org.spigotmc.event.entity.EntityDismountEvent;
 
-public class Chairs extends JavaPlugin implements Listener{
+public class Chairs extends JavaPlugin implements Listener,TabCompleter{
 
 	public static Chairs i;
 	public static NamespacedKey locationKeyX;
@@ -28,7 +30,7 @@ public class Chairs extends JavaPlugin implements Listener{
 	public static NamespacedKey locationKeyZ;
 	public static NamespacedKey locationKeyYaw;
 	public static NamespacedKey locationKeyPitch;
-	
+
 	@Override
 	public void onEnable() {
 		i = this;
@@ -39,6 +41,7 @@ public class Chairs extends JavaPlugin implements Listener{
 		locationKeyPitch = new NamespacedKey(i, "riderLocationPitch");
 		getServer().getPluginManager().registerEvents(this, this);
 		getCommand("chair").setExecutor(this);
+		getCommand("chair").setTabCompleter(this);
 		loadConfig();
 	}
 
@@ -53,31 +56,44 @@ public class Chairs extends JavaPlugin implements Listener{
 			Player p = (Player) s;
 			if(cmd.getName().equals("chair")){
 				if(!p.isOp()) return false;
-				if(args.length == 1){
+				if(args.length > 0){
 					if (args[0].equalsIgnoreCase("add")){
-						if(p.getTargetBlockExact(5).getType() != Material.AIR){
-							List<String> newlist = getConfig().getStringList("chairs");
-							newlist.add(p.getTargetBlockExact(5).getType().name());
-							getConfig().set("chairs", newlist);
-							loadConfig();
-							Message.normal("Added " + p.getTargetBlockExact(5).getType().name() + " to the Chairs list.");
-							return true;
+
+						if(args.length == 1) {
+							if(p.getTargetBlockExact(5).getType() != Material.AIR) return addChairWithMessages(p.getTargetBlockExact(5).getType(), p);
+
+							Message.error(s, "You must be looking at a block");
+							return false;
+						}else {
+							Material mat = Material.AIR;
+							for(Material m : Material.values()) if(args[1].equalsIgnoreCase(m.name())) {
+								mat = m;
+								break;
+							}
+
+							if(mat == Material.AIR) Message.error(p, "Found no block with such name : " + args[1]);
+							else return addChairWithMessages(mat, p);
 						}
-						Message.error(s, "You must be looking at a block");
-						return false;
 					}
+
 					if (args[0].equalsIgnoreCase("remove")){
-						if(p.getTargetBlockExact(5).getType() != Material.AIR){
-							List<String> newlist = getConfig().getStringList("chairs");
-							newlist.remove(p.getTargetBlockExact(5).getType().name());
-							getConfig().set("chairs", newlist);
-							loadConfig();
-							Message.normal("Removed " + p.getTargetBlockExact(5).getType().name() + " from the Chairs list.");
-							return true;
+						if(args.length == 1) {
+							if(p.getTargetBlockExact(5).getType() != Material.AIR) return removeChairWithMessages(p.getTargetBlockExact(5).getType(), p);
+
+							Message.error(s, "You must be looking at a block");
+							return false;
+						}else {
+							Material mat = Material.AIR;
+							for(Material m : Material.values()) if(args[1].equalsIgnoreCase(m.name())) {
+								mat = m;
+								break;
+							}
+
+							if(mat == Material.AIR) Message.error(p, "Found no block with such name : " + args[1]);
+							else return removeChairWithMessages(mat, p);
 						}
-						Message.error(s, "You must be looking at a block");
-						return false;
 					}
+
 					if (args[0].equalsIgnoreCase("list")){
 						Message.normal("Current Chairs list :");
 						for(String string : getConfig().getStringList("chairs")){
@@ -91,6 +107,80 @@ public class Chairs extends JavaPlugin implements Listener{
 			}
 		}
 		return false;
+	}
+
+	public boolean removeChairWithMessages(Material mat, Player p){
+		if(removeChair(mat)) {
+			Message.normal(p, "Removed " + mat.name() + " from the Chairs list.");
+			return true;
+		}
+		Message.error(p, mat.name() + " is not in the list");
+		return false;
+	}
+
+	private boolean removeChair(Material mat) {
+		List<String> newlist = getConfig().getStringList("chairs");
+		if(newlist.contains(mat.name())) {
+			newlist.remove(mat.name());
+			getConfig().set("chairs", newlist);
+			loadConfig();
+			return true;
+		}
+		return false;
+	}
+
+	public boolean addChairWithMessages(Material mat, Player p){
+		if(addChair(mat)) {
+			Message.normal(p, "added " + mat.name() + " to the Chairs list.");
+			return true;
+		}
+		Message.error(p, mat.name() + " is already in the list");
+		return false;
+	}
+
+	private boolean addChair(Material mat) {
+		List<String> newlist = getConfig().getStringList("chairs");
+		if(!newlist.contains(mat.name())) {
+			newlist.add(mat.name());
+			getConfig().set("chairs", newlist);
+			loadConfig();
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+		ArrayList<String> list = new ArrayList<String>();
+		if(args.length == 0 || args[0].equalsIgnoreCase("")) {
+			list.add("add");
+			list.add("remove");
+			list.add("list");
+		}else {
+			if(args.length == 1 || args[1].equalsIgnoreCase("")) {
+				if("add".startsWith(args[0]) && !args[0].equalsIgnoreCase("add")) list.add("add");
+				if("remove".startsWith(args[0]) && !args[0].equalsIgnoreCase("remove")) list.add("remove");
+				if("list".startsWith(args[0]) && !args[0].equalsIgnoreCase("list")) list.add("list");
+			}else {
+				if(args[0].equalsIgnoreCase("remove")) {
+					list.addAll(getConfig().getStringList("chairs"));
+				}
+				if(args[0].equalsIgnoreCase("add")) {
+					List<String> chairs = getConfig().getStringList("chairs");
+					for(Material mat : Material.values()) {
+						if(!chairs.contains(mat.name()) && args[1].startsWith(mat.name())
+								&& !mat.name().equalsIgnoreCase(Material.AIR.name())
+								&& !mat.name().equalsIgnoreCase(Material.CAVE_AIR.name())
+								&& !mat.name().equalsIgnoreCase(Material.VOID_AIR.name())
+								) list.add(mat.name());
+					}
+				}
+			}
+		}
+
+
+
+		return list;
 	}
 
 	@EventHandler
@@ -126,7 +216,7 @@ public class Chairs extends JavaPlugin implements Listener{
 			if(ar.getPersistentDataContainer().has(locationKeyZ, PersistentDataType.DOUBLE)) loc.setZ(ar.getPersistentDataContainer().get(locationKeyZ, PersistentDataType.DOUBLE));
 			if(ar.getPersistentDataContainer().has(locationKeyYaw, PersistentDataType.FLOAT)) loc.setYaw(ar.getPersistentDataContainer().get(locationKeyYaw, PersistentDataType.FLOAT));
 			if(ar.getPersistentDataContainer().has(locationKeyPitch, PersistentDataType.FLOAT)) loc.setPitch(ar.getPersistentDataContainer().get(locationKeyPitch, PersistentDataType.FLOAT));
-			
+
 			ar.remove();
 			e.getEntity().teleport(loc);
 		}
