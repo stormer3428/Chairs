@@ -19,6 +19,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.spigotmc.event.entity.EntityDismountEvent;
 
@@ -217,8 +218,15 @@ public class Chairs extends JavaPlugin implements Listener,TabCompleter{
 			if(ar.getPersistentDataContainer().has(locationKeyYaw, PersistentDataType.FLOAT)) loc.setYaw(ar.getPersistentDataContainer().get(locationKeyYaw, PersistentDataType.FLOAT));
 			if(ar.getPersistentDataContainer().has(locationKeyPitch, PersistentDataType.FLOAT)) loc.setPitch(ar.getPersistentDataContainer().get(locationKeyPitch, PersistentDataType.FLOAT));
 
+
 			ar.remove();
-			e.getEntity().teleport(loc);
+			new BukkitRunnable() {
+				
+				@Override
+				public void run() {
+					e.getEntity().teleport(loc);
+				}
+			}.runTaskLater(i, 1);
 		}
 	}
 }
