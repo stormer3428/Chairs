@@ -157,7 +157,7 @@ public class Chairs extends JavaPlugin implements Listener,TabCompleter{
 			list.add("remove");
 			list.add("list");
 		}else {
-			if(args.length == 1 || args[1].equalsIgnoreCase("")) {
+			if(args.length == 1) {
 				if("add".startsWith(args[0]) && !args[0].equalsIgnoreCase("add")) list.add("add");
 				if("remove".startsWith(args[0]) && !args[0].equalsIgnoreCase("remove")) list.add("remove");
 				if("list".startsWith(args[0]) && !args[0].equalsIgnoreCase("list")) list.add("list");
@@ -168,7 +168,7 @@ public class Chairs extends JavaPlugin implements Listener,TabCompleter{
 				if(args[0].equalsIgnoreCase("add")) {
 					List<String> chairs = getConfig().getStringList("chairs");
 					for(Material mat : Material.values()) {
-						if(!chairs.contains(mat.name()) && args[1].startsWith(mat.name())
+						if(!chairs.contains(mat.name()) && mat.name().toLowerCase().startsWith(args[1].toLowerCase()) && !args[1].equalsIgnoreCase(mat.name())
 								&& !mat.name().equalsIgnoreCase(Material.AIR.name())
 								&& !mat.name().equalsIgnoreCase(Material.CAVE_AIR.name())
 								&& !mat.name().equalsIgnoreCase(Material.VOID_AIR.name())
