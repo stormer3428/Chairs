@@ -60,9 +60,9 @@ public class Chairs extends JavaPlugin implements Listener,TabCompleter{
 					if (args[0].equalsIgnoreCase("add")){
 
 						if(args.length == 1) {
-							if(p.getTargetBlockExact(5).getType() != Material.AIR) return addChairWithMessages(p.getTargetBlockExact(5).getType(), p);
+							if(p.getTargetBlockExact(5) != null && p.getTargetBlockExact(5).getType() != Material.AIR) return addChairWithMessages(p.getTargetBlockExact(5).getType(), p);
 
-							Message.error(s, "You must be looking at a block");
+							Message.error(s, "You must be looking at a block or specify a block to add");
 							return false;
 						}else {
 							Material mat = Material.AIR;
@@ -78,9 +78,9 @@ public class Chairs extends JavaPlugin implements Listener,TabCompleter{
 
 					if (args[0].equalsIgnoreCase("remove")){
 						if(args.length == 1) {
-							if(p.getTargetBlockExact(5).getType() != Material.AIR) return removeChairWithMessages(p.getTargetBlockExact(5).getType(), p);
+							if(p.getTargetBlockExact(5) != null && p.getTargetBlockExact(5).getType() != Material.AIR) return removeChairWithMessages(p.getTargetBlockExact(5).getType(), p);
 
-							Message.error(s, "You must be looking at a block");
+							Message.error(s, "You must be looking at a block or specify a block to add");
 							return false;
 						}else {
 							Material mat = Material.AIR;
