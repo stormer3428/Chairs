@@ -186,9 +186,8 @@ public class Chairs extends JavaPlugin implements Listener,TabCompleter{
 
 	@EventHandler
 	private void onSit(PlayerInteractEvent e) {
-		if((e.getPlayer().getInventory().getItem(e.getHand()).getType().equals(Material.AIR) || e.getPlayer().getInventory().getItem(e.getHand()).getType() == null) 
+		if(e.getAction().equals(Action.RIGHT_CLICK_BLOCK) && (e.getPlayer().getInventory().getItem(e.getHand()).getType().equals(Material.AIR) || e.getPlayer().getInventory().getItem(e.getHand()).getType() == null) 
 				&& e.getClickedBlock() != null 
-				&& e.getAction().equals(Action.RIGHT_CLICK_BLOCK) 
 				&& !e.getPlayer().isSneaking()){
 			for(Entity ent : e.getPlayer().getNearbyEntities(1, 1, 1)) if(ent instanceof Arrow && ent.getCustomName().equals("Chair") && ent.getPassengers().contains(e.getPlayer())) return;
 			if(!getConfig().getStringList("chairs").contains(e.getClickedBlock().getType().name())) return;
