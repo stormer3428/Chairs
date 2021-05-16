@@ -3,9 +3,11 @@ package fr.stormer3428.chairs;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
@@ -43,7 +45,31 @@ public class Chairs extends JavaPlugin implements Listener,TabCompleter{
 		getServer().getPluginManager().registerEvents(this, this);
 		getCommand("chair").setExecutor(this);
 		getCommand("chair").setTabCompleter(this);
+		
+		for(Material mat : Material.values()) {
+			if(mat.toString().toLowerCase().contains("stairs")) {
+				addChair(mat);
+			}
+		}
+		
 		loadConfig();
+		antiDespawnLoop();
+	}
+
+	private void antiDespawnLoop() {
+		new BukkitRunnable() {
+			
+			@Override
+			public void run() {
+				for(World w : Bukkit.getWorlds()) {
+					for(Arrow ar : w.getEntitiesByClass(Arrow.class)) {
+						if(ar.getCustomName().equals("Chair")) {
+							ar.setTicksLived(1);
+						}
+					}
+				}
+			}
+		}.runTaskTimer(i, 0, 20*10);
 	}
 
 	void loadConfig() {
@@ -186,8 +212,10 @@ public class Chairs extends JavaPlugin implements Listener,TabCompleter{
 
 	@EventHandler
 	private void onSit(PlayerInteractEvent e) {
-		if(e.getAction().equals(Action.RIGHT_CLICK_BLOCK) && (e.getPlayer().getInventory().getItem(e.getHand()).getType().equals(Material.AIR) || e.getPlayer().getInventory().getItem(e.getHand()).getType() == null) 
+		if(e.getAction().equals(Action.RIGHT_CLICK_BLOCK) 
+				&& (e.getPlayer().getInventory().getItem(e.getHand()).getType().equals(Material.AIR) || e.getPlayer().getInventory().getItem(e.getHand()).getType() == null) 
 				&& e.getClickedBlock() != null 
+				&& e.getClickedBlock().getRelative(0, 1, 0).isPassable()
 				&& !e.getPlayer().isSneaking()){
 			for(Entity ent : e.getPlayer().getNearbyEntities(1, 1, 1)) if(ent instanceof Arrow && ent.getCustomName().equals("Chair") && ent.getPassengers().contains(e.getPlayer())) return;
 			if(!getConfig().getStringList("chairs").contains(e.getClickedBlock().getType().name())) return;
@@ -203,9 +231,10 @@ public class Chairs extends JavaPlugin implements Listener,TabCompleter{
 			ar.setSilent(true);
 			ar.setGravity(false);
 			ar.setPersistent(true);
+			ar.setTicksLived(1);
 		}
 	}
-
+	
 	@EventHandler
 	private void onStand(EntityDismountEvent e) {
 		if(e.getDismounted() instanceof Arrow && e.getDismounted().getCustomName().equals("Chair")) {
