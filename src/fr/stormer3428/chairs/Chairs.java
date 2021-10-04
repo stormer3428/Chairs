@@ -213,7 +213,7 @@ public class Chairs extends JavaPlugin implements Listener,TabCompleter{
 	@EventHandler
 	private void onSit(PlayerInteractEvent e) {
 		if(e.getAction().equals(Action.RIGHT_CLICK_BLOCK) 
-				&& (e.getPlayer().getInventory().getItem(e.getHand()).getType().equals(Material.AIR) || e.getPlayer().getInventory().getItem(e.getHand()).getType() == null) 
+				&& (e.getPlayer().getInventory().getItem(e.getHand()) == null || e.getPlayer().getInventory().getItem(e.getHand()).getType().equals(Material.AIR)) 
 				&& e.getClickedBlock() != null 
 				&& e.getClickedBlock().getRelative(0, 1, 0).isPassable()
 				&& !e.getPlayer().isSneaking()){

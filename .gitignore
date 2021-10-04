@@ -2,3 +2,6 @@
 *.class
 Chairs/bin/fr/stormer3428/chairs/Chairs$1.class
 Chairs/bin/fr/stormer3428/chairs/Chairs.class
+*.class
+*.class
+*.prefs
