@@ -56,14 +56,14 @@ public class Chairs extends JavaPlugin implements Listener,TabCompleter{
 		antiDespawnLoop();
 	}
 
-	private void antiDespawnLoop() {
+	private static void antiDespawnLoop() {
 		new BukkitRunnable() {
 			
 			@Override
 			public void run() {
 				for(World w : Bukkit.getWorlds()) {
 					for(Arrow ar : w.getEntitiesByClass(Arrow.class)) {
-						if(ar.getCustomName().equals("Chair")) {
+						if(ar.getCustomName() != null && ar.getCustomName().equals("Chair")) {
 							ar.setTicksLived(1);
 						}
 					}
@@ -91,16 +91,15 @@ public class Chairs extends JavaPlugin implements Listener,TabCompleter{
 
 							Message.error(s, "You must be looking at a block or specify a block to add");
 							return false;
-						}else {
-							Material mat = Material.AIR;
-							for(Material m : Material.values()) if(args[1].equalsIgnoreCase(m.name())) {
-								mat = m;
-								break;
-							}
-
-							if(mat == Material.AIR) Message.error(p, "Found no block with such name : " + args[1]);
-							else return addChairWithMessages(mat, p);
 						}
+						Material mat = Material.AIR;
+						for(Material m : Material.values()) if(args[1].equalsIgnoreCase(m.name())) {
+							mat = m;
+							break;
+						}
+
+						if(mat == Material.AIR) Message.error(p, "Found no block with such name : " + args[1]);
+						else return addChairWithMessages(mat, p);
 					}
 
 					if (args[0].equalsIgnoreCase("remove")){
@@ -109,16 +108,15 @@ public class Chairs extends JavaPlugin implements Listener,TabCompleter{
 
 							Message.error(s, "You must be looking at a block or specify a block to add");
 							return false;
-						}else {
-							Material mat = Material.AIR;
-							for(Material m : Material.values()) if(args[1].equalsIgnoreCase(m.name())) {
-								mat = m;
-								break;
-							}
-
-							if(mat == Material.AIR) Message.error(p, "Found no block with such name : " + args[1]);
-							else return removeChairWithMessages(mat, p);
 						}
+						Material mat = Material.AIR;
+						for(Material m : Material.values()) if(args[1].equalsIgnoreCase(m.name())) {
+							mat = m;
+							break;
+						}
+
+						if(mat == Material.AIR) Message.error(p, "Found no block with such name : " + args[1]);
+						else return removeChairWithMessages(mat, p);
 					}
 
 					if (args[0].equalsIgnoreCase("list")){
@@ -178,7 +176,7 @@ public class Chairs extends JavaPlugin implements Listener,TabCompleter{
 
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-		ArrayList<String> list = new ArrayList<String>();
+		ArrayList<String> list = new ArrayList<>();
 		if(args.length == 0 || args[0].equalsIgnoreCase("")) {
 			list.add("add");
 			list.add("remove");
@@ -235,6 +233,7 @@ public class Chairs extends JavaPlugin implements Listener,TabCompleter{
 		}
 	}
 	
+	@SuppressWarnings("static-method")
 	@EventHandler
 	private void onStand(EntityDismountEvent e) {
 		if(e.getDismounted() instanceof Arrow && e.getDismounted().getCustomName().equals("Chair")) {
