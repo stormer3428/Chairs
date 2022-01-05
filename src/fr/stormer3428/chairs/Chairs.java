@@ -18,6 +18,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -254,6 +255,15 @@ public class Chairs extends JavaPlugin implements Listener,TabCompleter{
 					e.getEntity().teleport(loc);
 				}
 			}.runTaskLater(i, 1);
+		}
+	}
+	
+	@SuppressWarnings("static-method")
+	@EventHandler
+	private void onChairBreak(BlockBreakEvent e) {
+		for(Entity ent : e.getPlayer().getNearbyEntities(1, 1, 1)) if(ent instanceof Arrow && ent.getCustomName() != null && ent.getCustomName().equals("Chair") && ent.getPassengers().contains(e.getPlayer())) {
+			e.setCancelled(true);
+			return;
 		}
 	}
 }
