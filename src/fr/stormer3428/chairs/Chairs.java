@@ -215,7 +215,7 @@ public class Chairs extends JavaPlugin implements Listener,TabCompleter{
 				&& e.getClickedBlock() != null 
 				&& e.getClickedBlock().getRelative(0, 1, 0).isPassable()
 				&& !e.getPlayer().isSneaking()){
-			for(Entity ent : e.getPlayer().getNearbyEntities(1, 1, 1)) if(ent instanceof Arrow && ent.getCustomName().equals("Chair") && ent.getPassengers().contains(e.getPlayer())) return;
+			for(Entity ent : e.getPlayer().getNearbyEntities(1, 1, 1)) if(ent instanceof Arrow && ent.getCustomName() != null && ent.getCustomName().equals("Chair") && ent.getPassengers().contains(e.getPlayer())) return;
 			if(!getConfig().getStringList("chairs").contains(e.getClickedBlock().getType().name())) return;
 			Arrow ar = e.getPlayer().getWorld().spawn(e.getClickedBlock().getLocation().add(new Vector(.5, .1, .5)), Arrow.class);
 			ar.setPickupStatus(PickupStatus.DISALLOWED);
@@ -236,7 +236,7 @@ public class Chairs extends JavaPlugin implements Listener,TabCompleter{
 	@SuppressWarnings("static-method")
 	@EventHandler
 	private void onStand(EntityDismountEvent e) {
-		if(e.getDismounted() instanceof Arrow && e.getDismounted().getCustomName().equals("Chair")) {
+		if(e.getDismounted() instanceof Arrow && e.getDismounted().getCustomName() != null && e.getDismounted().getCustomName().equals("Chair")) {
 			Arrow ar = (Arrow) e.getDismounted();
 			Location loc = ar.getLocation();
 			if(ar.getPersistentDataContainer().has(locationKeyX, PersistentDataType.DOUBLE)) loc.setX(ar.getPersistentDataContainer().get(locationKeyX, PersistentDataType.DOUBLE));
