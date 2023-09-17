@@ -3,17 +3,13 @@ package fr.stormer3428.chairs;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
-import org.bukkit.entity.AbstractArrow.PickupStatus;
-import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Interaction;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -26,7 +22,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.spigotmc.event.entity.EntityDismountEvent;
 
-public class Chairs extends JavaPlugin implements Listener,TabCompleter{
+public class Chairs extends JavaPlugin implements Listener{
 
 	public static Chairs i;
 	public static NamespacedKey locationKeyX;
@@ -54,23 +50,6 @@ public class Chairs extends JavaPlugin implements Listener,TabCompleter{
 		}
 		
 		loadConfig();
-		antiDespawnLoop();
-	}
-
-	private static void antiDespawnLoop() {
-		new BukkitRunnable() {
-			
-			@Override
-			public void run() {
-				for(World w : Bukkit.getWorlds()) {
-					for(Arrow ar : w.getEntitiesByClass(Arrow.class)) {
-						if(ar.getCustomName() != null && ar.getCustomName().equals("Chair")) {
-							ar.setTicksLived(1);
-						}
-					}
-				}
-			}
-		}.runTaskTimer(i, 0, 20*10);
 	}
 
 	void loadConfig() {
@@ -216,11 +195,13 @@ public class Chairs extends JavaPlugin implements Listener,TabCompleter{
 				&& e.getClickedBlock() != null 
 				&& e.getClickedBlock().getRelative(0, 1, 0).isPassable()
 				&& !e.getPlayer().isSneaking()){
-			for(Entity ent : e.getPlayer().getNearbyEntities(1, 1, 1)) if(ent instanceof Arrow && ent.getCustomName() != null && ent.getCustomName().equals("Chair") && ent.getPassengers().contains(e.getPlayer())) return;
+			for(Entity ent : e.getPlayer().getNearbyEntities(1, 1, 1)) if(ent instanceof Interaction && ent.getCustomName() != null && ent.getCustomName().equals("Chair") && ent.getPassengers().contains(e.getPlayer())) return;
 			if(!getConfig().getStringList("chairs").contains(e.getClickedBlock().getType().name())) return;
-			Arrow ar = e.getPlayer().getWorld().spawn(e.getClickedBlock().getLocation().add(new Vector(.5, .1, .5)), Arrow.class);
-			ar.setPickupStatus(PickupStatus.DISALLOWED);
+			Interaction ar = e.getPlayer().getWorld().spawn(e.getClickedBlock().getLocation().add(new Vector(.5, .3, .5)), Interaction.class);
+
 			ar.setCustomName("Chair");
+			ar.setInteractionHeight(0);
+			ar.setInteractionWidth(0);
 			ar.getPersistentDataContainer().set(locationKeyX, PersistentDataType.DOUBLE, e.getPlayer().getLocation().getX());
 			ar.getPersistentDataContainer().set(locationKeyY, PersistentDataType.DOUBLE, e.getPlayer().getLocation().getY());
 			ar.getPersistentDataContainer().set(locationKeyZ, PersistentDataType.DOUBLE, e.getPlayer().getLocation().getZ());
@@ -234,18 +215,16 @@ public class Chairs extends JavaPlugin implements Listener,TabCompleter{
 		}
 	}
 	
-	@SuppressWarnings("static-method")
 	@EventHandler
 	private void onStand(EntityDismountEvent e) {
-		if(e.getDismounted() instanceof Arrow && e.getDismounted().getCustomName() != null && e.getDismounted().getCustomName().equals("Chair")) {
-			Arrow ar = (Arrow) e.getDismounted();
+		if(e.getDismounted() instanceof Interaction ar && e.getDismounted().getCustomName() != null && e.getDismounted().getCustomName().equals("Chair")) {
+
 			Location loc = ar.getLocation();
 			if(ar.getPersistentDataContainer().has(locationKeyX, PersistentDataType.DOUBLE)) loc.setX(ar.getPersistentDataContainer().get(locationKeyX, PersistentDataType.DOUBLE));
 			if(ar.getPersistentDataContainer().has(locationKeyY, PersistentDataType.DOUBLE)) loc.setY(ar.getPersistentDataContainer().get(locationKeyY, PersistentDataType.DOUBLE));
 			if(ar.getPersistentDataContainer().has(locationKeyZ, PersistentDataType.DOUBLE)) loc.setZ(ar.getPersistentDataContainer().get(locationKeyZ, PersistentDataType.DOUBLE));
 			if(ar.getPersistentDataContainer().has(locationKeyYaw, PersistentDataType.FLOAT)) loc.setYaw(ar.getPersistentDataContainer().get(locationKeyYaw, PersistentDataType.FLOAT));
 			if(ar.getPersistentDataContainer().has(locationKeyPitch, PersistentDataType.FLOAT)) loc.setPitch(ar.getPersistentDataContainer().get(locationKeyPitch, PersistentDataType.FLOAT));
-
 
 			ar.remove();
 			new BukkitRunnable() {
@@ -258,10 +237,9 @@ public class Chairs extends JavaPlugin implements Listener,TabCompleter{
 		}
 	}
 	
-	@SuppressWarnings("static-method")
 	@EventHandler
 	private void onChairBreak(BlockBreakEvent e) {
-		for(Entity ent : e.getPlayer().getNearbyEntities(1, 1, 1)) if(ent instanceof Arrow && ent.getCustomName() != null && ent.getCustomName().equals("Chair") && ent.getPassengers().contains(e.getPlayer())) {
+		for(Entity ent : e.getPlayer().getNearbyEntities(1, 1, 1)) if(ent instanceof Interaction && ent.getCustomName() != null && ent.getCustomName().equals("Chair") && ent.getPassengers().contains(e.getPlayer())) {
 			e.setCancelled(true);
 			return;
 		}
